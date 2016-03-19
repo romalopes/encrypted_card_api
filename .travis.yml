@@ -1,3 +1,7 @@
 language: ruby
 rvm:
   - 2.2.4
+
+
+env:
+  - RAILS='~> 5.0.0'
