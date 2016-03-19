@@ -172,7 +172,7 @@ DEPENDENCIES
   gibberish
   listen (~> 3.0.5)
   mysql2
-  pg
+  pg (= 0.15.1)
   puma
   rails (>= 5.0.0.beta3, < 5.1)
   rails-controller-testing

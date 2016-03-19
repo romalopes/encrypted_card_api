@@ -5,7 +5,7 @@ source 'https://rubygems.org'
 gem 'rails', '>= 5.0.0.beta3', '< 5.1'
 # Use sqlite3 as the database for Active Record
 # gem 'sqlite3
-gem 'mysql2'
+
 # Use Puma as the app server
 gem 'puma'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
@@ -23,11 +23,13 @@ gem 'puma'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
+  gem 'mysql2'
   gem 'sqlite3'
   gem 'byebug'
 end
 
 group :development do
+
   gem 'listen', '~> 3.0.5'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
@@ -54,6 +56,6 @@ gem 'gibberish'
 group :production do
   gem 'rails_log_stdout',           github: 'heroku/rails_log_stdout'
   gem 'rails3_serve_static_assets', github: 'heroku/rails3_serve_static_assets'
-  gem 'pg'#, '0.15.1'
+  gem 'pg', '0.15.1'
   gem 'rails_12factor', '0.0.2'
 end
