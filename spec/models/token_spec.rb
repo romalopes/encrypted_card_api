@@ -6,7 +6,7 @@ RSpec.describe Token, :type => :model do
 	let(:token) { FactoryGirl.create(:token) }
 	before do
 		@user = User.create(login:"login", hashed_password: User.encrypted_value("romalopes"))
-    @token = @user.tokens.create(token: Token.generate_token(@user.to_param))
+		@token = Token.create_token(@user)
 	end
 
   subject { @token }
@@ -15,6 +15,13 @@ RSpec.describe Token, :type => :model do
 
 	it { should be_valid }
 
+	describe "when creating token without user" do
+    it { 
+    	 token = Token.create_token(nil)
+    	 expect(token).to eq(nil)
+    }
+	end
+
 	describe "when generating token" do
     it { 
     	 generated_token = Token.generate_token(@user.to_param)
@@ -22,14 +29,21 @@ RSpec.describe Token, :type => :model do
     }
 	end
 
-	describe "when verify token" do
-		it "token is correct" do 
-			# @credit.hashed_password
-			# expect(CreditCard.encrypted_value("romalopes")).to eq(@credit.hashed_password)
+	describe "test if token " do 
+		it "when it is valid" do
+			puts "\n-----  @token.updated_at:#{@token.updated_at}\n\n\n"
+			previous_updated_at = @token.updated_at
+			sleep(0.1)
+			token = Token.get_token_and_touch(@token.token)
+			expect(token.present?).to eq(true)
+			expect(token.updated_at).not_to eq(previous_updated_at)
+			token.updated_at.should be > previous_updated_at
 		end
 
-		it "password is incorrect" do 
-			# expect(User.encrypted_value("romalopes_1")).not_to eq(@user.hashed_password)
+		it "when it is invalid" do
+			token = Token.get_token_and_touch(@token.token + "not valid")
+			expect(token.present?).to eq(false)
 		end
 	end
+
 end

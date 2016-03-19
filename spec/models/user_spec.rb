@@ -48,4 +48,12 @@ RSpec.describe User, :type => :model do
 			expect(User.encrypted_value("romalopes_1")).not_to eq(@user.hashed_password)
 		end
 	end
+
+	describe "when try to authenticate" do 
+		it "successful" do 
+			token = User.authenticate_and_generate_new_token("login_1", "romalopes")
+			expect(token).not_to eq(nil)
+			expect(token.token.size).to eq(50)
+		end
+	end
 end

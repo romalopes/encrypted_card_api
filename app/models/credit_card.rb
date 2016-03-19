@@ -13,7 +13,7 @@ class CreditCard < ApplicationRecord
   	}
 	end
 
-	def self.create_by_params(credit_card_params, password)
+	def self.create_by_params(password, credit_card_params)
 		if credit_card_params[:credit_card_number] && !credit_card_params[:credit_card_number].empty?
 			result = encrypted_value(credit_card_params[:credit_card_number], password)
 			credit_card_params[:credit_card_number] = result

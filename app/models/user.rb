@@ -21,5 +21,12 @@ class User < ApplicationRecord
   def self.encrypted_value(value)
 		Gibberish::MD5(value)
 	end
+
+	def self.authenticate_and_generate_new_token(login, password)
+		user = User.where(login: login, hashed_password: encrypted_value(password)).first
+		if user 
+			return Token.create_token(user)
+		end
+	end
 end
 

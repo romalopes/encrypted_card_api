@@ -1,4 +1,5 @@
 class UsersController < ApplicationController
+  before_action :verify_token, :only => [:update, :destroy]
   before_action :set_user, only: [:show, :update, :destroy]
 
   # GET /users
@@ -15,7 +16,6 @@ class UsersController < ApplicationController
 
   # POST /users
   def create
-
     @user = User.create_by_params(user_params)
 
     if @user.errors.empty?
@@ -27,6 +27,8 @@ class UsersController < ApplicationController
 
   # PATCH/PUT /users/1
   def update
+    return unless @token_verified
+
     if @user.update(user_params)
       render json: @user
     else
@@ -36,7 +38,18 @@ class UsersController < ApplicationController
 
   # DELETE /users/1
   def destroy
+    return unless @token_verified
+  
     @user.destroy
+  end
+
+  def authenticate
+    token = User.authenticate_and_generate_new_token(params[:login], params[:password])
+    if token 
+      render json: token
+    else
+      render json: {:error => "Login or password don't match"}.to_json
+    end
   end
 
   private
