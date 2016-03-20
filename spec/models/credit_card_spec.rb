@@ -21,8 +21,6 @@ RSpec.describe CreditCard, :type => :model do
     	@credit_card.key = nil
     	should_not be_valid 
     }
-    	# before { @lawn.width = "aaa" }
-    	# it { should_not be_valid }
 	end
 
 	describe "when verify credit_card" do
