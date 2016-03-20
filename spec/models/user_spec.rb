@@ -24,15 +24,15 @@ RSpec.describe User, :type => :model do
 
 	describe "create by params" do 
 		it "params ok" do 
-			user_params = {login: "login", hashed_password: "password"}
+			# user_params = {login: "login", password: "password"}
 			count = User.count
-			user = User.create_by_params(user_params)
+			user = User.create_by_params("login", "password")
 			expect(user.errors.empty?).to eq(true)
 		end
 		it "params no login" do 
-			user_params = {login: nil, hashed_password: "password"}
+			# user_params = {login: nil, hashed_password: "password"}
 			count = User.count
-			user = User.create_by_params(user_params)
+			user = User.create_by_params(nil, "password")
 			expect(user.errors.empty?).to eq(false)
 			user.valid?
       user.errors.should have_key(:login)

@@ -101,7 +101,7 @@ RSpec.describe CreditCardsController, :type => :controller do
         user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
         token = User.authenticate_and_generate_new_token("login", "hashed_password")
         count = CreditCard.count
-        post :create, {password: "romalopes", token: token.token, credit_card: {user_id: user.id, key: "key", credit_card_number: "credit_card_number"}}, valid_session
+        post :create, {password: "romalopes", token: token.token, key: "key", credit_card_number: "credit_card_number"}, valid_session
 
         expect(response).to be_success
         parsed_response = JSON.parse(response.body)
@@ -113,7 +113,7 @@ RSpec.describe CreditCardsController, :type => :controller do
       it "assigns a newly created credit_card as @credit_card" do
         user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
         token = User.authenticate_and_generate_new_token("login", "hashed_password")
-        post :create, {password: "romalopes", token: token.token, credit_card: {user_id: user.id, key: "key", credit_card_number: "credit_card_number"}}, valid_session
+        post :create, {password: "romalopes", token: token.token, key: "key", credit_card_number: "credit_card_number"}, valid_session
         credit_card = CreditCard.last
         # expect(assigns(:credit_card)).to be_a(CreditCard)
         # expect(assigns(:credit_card)).to be_persisted
@@ -125,7 +125,7 @@ RSpec.describe CreditCardsController, :type => :controller do
       it "redirects to the created credit_card" do
         user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
         token = User.authenticate_and_generate_new_token("login", "hashed_password")
-        post :create, {password: "romalopes", token: token.token, credit_card: {user_id: user.id, key: "key", credit_card_number: "credit_card_number"}}, valid_session
+        post :create, {password: "romalopes", token: token.token, key: "key", credit_card_number: "credit_card_number"}, valid_session
         # post :create, {:credit_card => valid_attributes}, valid_session
         # expect(response).to redirect_to(CreditCard.last)
         expect(response.status).to eq(201)
@@ -138,7 +138,7 @@ RSpec.describe CreditCardsController, :type => :controller do
       it "assigns a newly created but unsaved credit_card as @credit_card" do
         user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
         token = User.authenticate_and_generate_new_token("login", "hashed_password")
-        post :create, {password: "romalopes", token: token.token, credit_card: {user_id: user.id, key: "key"}}, valid_session
+        post :create, {password: "romalopes", token: token.token, key: "key"}, valid_session
         parsed_response = JSON.parse(response.body)
         expect(response.status).to eq(422)
         expect(parsed_response).to eq({"credit_card_number"=>["can't be blank"]})
@@ -209,7 +209,7 @@ RSpec.describe CreditCardsController, :type => :controller do
     it "destroys the requested credit_card" do
       user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
       token = User.authenticate_and_generate_new_token("login", "hashed_password")
-      credit_card = user.credit_cards.create(key: "key", credit_card_number: CreditCard.encrypted_value("credit_card_number", "romalopes")) #, valid_attributes
+      credit_card = user.credit_cards.create(key: "key", credit_card_number: CreditCard.encrypted_value("credit_card_number_value", "romalopes")) #, valid_attributes
       expect {
         delete :destroy, {:id => credit_card.to_param, token: token.token}, valid_session
       }.to change(CreditCard, :count).by(-1)
@@ -224,6 +224,48 @@ RSpec.describe CreditCardsController, :type => :controller do
     #   expect(response).to redirect_to(credit_cards_url)
     #   response.should redirect_to credit_cards_url
     # end
+  end
+
+
+  describe "POST retrieve credit_card_number" do
+    describe "with valid params" do
+      it "credit card not found" do
+        # expect {
+        #   post :create, {:credit_card => valid_attributes}, valid_session
+        # }.to change(CreditCard, :count).by(1)
+
+        user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
+        token = User.authenticate_and_generate_new_token("login", "hashed_password")
+        credit_card = user.credit_cards.create(key: "key", credit_card_number: CreditCard.encrypted_value("credit_card_number_value", "romalopes")) #, valid_attributes
+        post :retrieve_credit_card_number, {password: "romalopes", key: "key_1", token: token.token}, valid_session
+
+        expect(response.status).to eq(422)
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to eq({"error" => "Credit card nor found."})
+      end
+
+      it "return correct CreditCard_number and wrong password" do
+        user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
+        token = User.authenticate_and_generate_new_token("login", "hashed_password")
+        credit_card = user.credit_cards.create(key: "key", credit_card_number: CreditCard.encrypted_value("credit_card_number_value", "romalopes")) #, valid_attributes
+        post :retrieve_credit_card_number, {password: "romalopes", key: "key", token: token.token}, valid_session
+
+        expect(response).to be_success
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to eq({"credit_card_number"=>"credit_card_number_value"})
+      end
+
+      it "return correct CreditCard_number and password" do
+        user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
+        token = User.authenticate_and_generate_new_token("login", "hashed_password")
+        credit_card = user.credit_cards.create(key: "key", credit_card_number: CreditCard.encrypted_value("credit_card_number_value", "romalopes")) #, valid_attributes
+        post :retrieve_credit_card_number, {password: "romalopes_1", key: "key", token: token.token}, valid_session
+
+        expect(response.status).to eq(422)
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to eq({"error" => "Token not found or Credit Card could not be decrypted."})
+      end
+    end
   end
 
 end

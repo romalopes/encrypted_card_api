@@ -25,8 +25,12 @@ class CreditCardsController < ApplicationController
   def create
     return unless @token_verified
     
-    credit_card_params
-    @credit_card = CreditCard.create_by_params(params[:password], credit_card_params)
+    puts "params:#{params}"
+    if params[:password].blank?
+      render json: {:error => "Password can't not be emtpy"}.to_json, status: :unauthorized and return
+    end
+
+    @credit_card = CreditCard.create_by_params(@token_verified, params[:password], params[:key], params[:credit_card_number])
 
     if @credit_card.save
       render json: @credit_card, status: :created, location: @credit_card
@@ -49,8 +53,23 @@ class CreditCardsController < ApplicationController
   # DELETE /credit_cards/1
   def destroy
     return unless @token_verified
-
     @credit_card.destroy
+  end
+
+  def retrieve_credit_card_number
+
+    return unless @token_verified
+
+    credit_card = @token_verified.user.credit_cards.where(key: params[:key]).first
+    if credit_card.nil?
+      render json: {:error => "Credit card nor found."}.to_json, status: :unprocessable_entity and return
+    end
+    credit_card_number = credit_card.decrypted_credit_card(params[:password])
+    if credit_card_number
+      render json: {:credit_card_number => credit_card_number}.to_json, status: 200 and return
+    else 
+      render json: {:error => "Token not found or Credit Card could not be decrypted."}.to_json, status: :unprocessable_entity and return
+    end
   end
 
   private

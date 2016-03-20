@@ -38,26 +38,48 @@ RSpec.describe UsersController, :type => :controller do
 
   describe "GET index" do
     it "assigns all users as @users" do
-      user = User.create(login: "login", hashed_password: User.encrypted_value("hashed_password"))
-      token = User.authenticate_and_generate_new_token("login", "hashed_password")
+      user = User.create(login: "user_master", hashed_password: User.encrypted_value("hashed_password"))
+      token = User.authenticate_and_generate_new_token("user_master", "hashed_password")
       get :index, {token: token.token}, valid_session
       # expect(assigns(:users)).to eq([user])
       expect(response).to be_success
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq([{"login"=>"login"}])
+      expect(parsed_response).to eq([{"login"=>"user_master"}])
+    end
+
+    it "assigns all users as not user_master" do
+      user = User.create(login: "login", hashed_password: User.encrypted_value("hashed_password"))
+      token = User.authenticate_and_generate_new_token("login", "hashed_password")
+      get :index, {token: token.token}, valid_session
+      # expect(assigns(:users)).to eq([user])
+      expect(response.status).to eq(422)
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response).to eq({"error" => "Only user master can do this action"})
     end
   end
 
   describe "GET show" do
     it "assigns the requested user as @user" do
       
-      user = User.create(login: "login", hashed_password: User.encrypted_value("hashed_password"))
-      token = User.authenticate_and_generate_new_token("login", "hashed_password")
+      user = User.create(login: "user_master", hashed_password: User.encrypted_value("hashed_password"))
+      token = User.authenticate_and_generate_new_token("user_master", "hashed_password")
       get :show, {token: token.token, :id => user.to_param}, valid_session
       # expect(assigns(:credit_card)).to eq(credit_card)
       expect(response).to be_success
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq({"login"=>"login"})
+      expect(parsed_response).to eq({"login"=>"user_master"})
+    end
+
+
+    it "assigns the requested user not user_master" do
+      user = User.create(login: "login", hashed_password: User.encrypted_value("hashed_password"))
+      token = User.authenticate_and_generate_new_token("login", "hashed_password")
+      get :show, {token: token.token, :id => user.to_param}, valid_session
+      # expect(assigns(:users)).to eq([user])
+      puts "\n\n\n\n----------response.body:#{response.body}"
+      expect(response.status).to eq(422)
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response).to eq({"error" => "Only user master can do this action"})
     end
   end
 
@@ -77,6 +99,43 @@ RSpec.describe UsersController, :type => :controller do
   # end
 
   describe "POST create" do
+
+    describe "create user_master" do 
+      it "creates a new User Master" do
+        # expect {
+        #   # post :create, {:user => valid_attributes}, valid_session
+        #   post :create, {:user => {login: "login", hashed_password: "password"}}, valid_session
+        # }.to change(User, :count).by(1)
+
+        # user = User.last
+
+        count = User.count
+        post :create_user_master, {password: "hashed_password"}, valid_session
+
+        expect(response).to be_success
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to eq({"login"=>"user_master"})
+        
+        last_user = User.last
+        expect(last_user.as_json).to eq( {:login=>"user_master"})
+        expect(User.all.count).to eq(count + 1 )
+      end
+
+      it "User Master already exists" do
+        user = User.create(login:"user_master", hashed_password: User.encrypted_value("hashed_password"))
+        count = User.count
+        post :create_user_master, {password: "hashed_password"}, valid_session
+
+        expect(response.status).to eq(422)
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to eq({"error" => "User Master already exists"})
+        
+        last_user = User.last
+        expect(last_user.as_json).to eq( {:login=>"user_master"})
+        expect(User.all.count).to eq(count )
+      end
+    end
+
     describe "with valid params" do
       it "creates a new User" do
         # expect {
@@ -86,10 +145,10 @@ RSpec.describe UsersController, :type => :controller do
 
         # user = User.last
 
-        user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
-        token = User.authenticate_and_generate_new_token("login", "hashed_password")
+        user = User.create(login:"user_master", hashed_password: User.encrypted_value("hashed_password"))
+        token = User.authenticate_and_generate_new_token("user_master", "hashed_password")
         count = User.count
-        post :create, {token: token.token, user: {login: "login_2", hashed_password: "hashed_password"}}, valid_session
+        post :create, {token: token.token, login: "login_2", password: "hashed_password"}, valid_session
 
         expect(response).to be_success
         parsed_response = JSON.parse(response.body)
@@ -103,7 +162,7 @@ RSpec.describe UsersController, :type => :controller do
       it "assigns a newly created user as @user" do
         user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
         token = User.authenticate_and_generate_new_token("login", "hashed_password")
-        post :create, {token: token.token, user: {login: "login_2", hashed_password:"hashed_password"}}, valid_session
+        post :create, {token: token.token, login: "login_2", password:"hashed_password"}, valid_session
         user = User.last
         expect(user).to be_a(User)
         expect(user).to be_persisted
@@ -118,10 +177,11 @@ RSpec.describe UsersController, :type => :controller do
 
     describe "with invalid params" do
       it "assigns a newly created but unsaved user as @user" do
+        user = User.create(login:"user_master", hashed_password: User.encrypted_value("hashed_password"))
+        token = User.authenticate_and_generate_new_token("user_master", "hashed_password")
         user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
-        token = User.authenticate_and_generate_new_token("login", "hashed_password")
 
-        post :create, {token: token.token, user: {login: nil, hashed_password: nil}}, valid_session
+        post :create, {token: token.token, user: {login: nil, password: nil}}, valid_session
         # expect(assigns(:user)).to be_a_new(User)
         parsed_response = JSON.parse(response.body)
         expect(response.status).to eq(422)
@@ -147,8 +207,9 @@ RSpec.describe UsersController, :type => :controller do
         # user.reload
         # skip("Add assertions for updated state")
 
+        master_user = User.create(login:"user_master", hashed_password: User.encrypted_value("hashed_password"))
         user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
-        token = User.authenticate_and_generate_new_token("login", "hashed_password")
+        token = User.authenticate_and_generate_new_token("user_master", "hashed_password")
         put :update, {token: token.token, :id => user.to_param, :user => {login: "login_1"}}, valid_session
         user.reload
         expect(response.status).to eq(200)
@@ -171,8 +232,9 @@ RSpec.describe UsersController, :type => :controller do
 
     describe "with invalid params" do
       it "assigns the user as @user" do
+        user = User.create(login:"user_master", hashed_password: User.encrypted_value("hashed_password"))
+        token = User.authenticate_and_generate_new_token("user_master", "hashed_password")
         user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
-        token = User.authenticate_and_generate_new_token("login", "hashed_password")
 
         put :update, {token: token.token, :id => user.to_param, :user => {login: nil}}, valid_session
         # expect(assigns(:user)).to eq(user)
@@ -195,9 +257,9 @@ RSpec.describe UsersController, :type => :controller do
       # expect {
       #   delete :destroy, {:id => user.to_param}, valid_session
       # }.to change(User, :count).by(-1)
+      user = User.create(login:"user_master", hashed_password: User.encrypted_value("hashed_password"))
+      token = User.authenticate_and_generate_new_token("user_master", "hashed_password")
       user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
-      token = User.authenticate_and_generate_new_token("login", "hashed_password")
-
       expect {
         delete :destroy, {token: token.token, :id => user.to_param}, valid_session
       }.to change(User, :count).by(-1)

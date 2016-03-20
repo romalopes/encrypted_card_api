@@ -6,22 +6,30 @@ class CreditCard < ApplicationRecord
 	validates_uniqueness_of :key, :scope => :user_id
 
 	def as_json(options={})
-  	{ id: self.id,
-  		user_id: self.user_id,
+  	{ 
+  		user: self.user.login,
   		key: self.key,
   		# credit_card_number: self.credit_card_number 
   	}
 	end
 
-	def self.create_by_params(password, credit_card_params)
-		if credit_card_params[:credit_card_number] && !credit_card_params[:credit_card_number].empty?
-			result = encrypted_value(credit_card_params[:credit_card_number], password)
-			credit_card_params[:credit_card_number] = result
+	def self.create_by_params(token, password, key, credit_card_number)
+
+		puts "token:#{token.user.login}, password:#{password}, key:#{key}, credit_card_number:#{credit_card_number}"
+		if !credit_card_number.blank? && !password.blank? && !key.blank?
+			credit_card_number_encrypted = encrypted_value(credit_card_number, password)
 		end
-    return CreditCard.create(credit_card_params)
+		return CreditCard.create(user: token.user, key: key, credit_card_number: credit_card_number_encrypted)
+    
 	end
 
 	def decrypted_credit_card(password)
+		begin
+			cipher = Gibberish::AES.new(password)
+			return cipher.decrypt("#{self.credit_card_number}")
+		rescue Gibberish::AES::SJCL::DecryptionError => e 
+		end
+# => "some secret text"
 
 	end
 

@@ -8,11 +8,11 @@ class User < ApplicationRecord
   	{ :login => self.login }
 	end
 
-	def self.create_by_params(user_params)
-		if user_params[:hashed_password] && !user_params[:hashed_password].empty?
-    	user_params[:hashed_password] = User.encrypted_value(user_params[:hashed_password]) 
+	def self.create_by_params(login, password)
+		if password.present? && !password.empty?
+    	hashed_password = User.encrypted_value(password) 
     end
-    return User.create(user_params)
+    return User.create(login: login, hashed_password: hashed_password)
   end
 
 	# https://github.com/mdp/gibberish#encrypting

@@ -19,7 +19,9 @@ class Token < ApplicationRecord
 
 	def self.get_token_and_touch(token_string)
 		token = Token.where("token = ? and updated_at > ? ", token_string, Time.now - 30.minutes).first
+		# token = Token.where("token = ?", token_string).first
 		if token.present?
+			# puts "\n\n    \nTime.now:#{Time.now}"
 			# token.save
 			token.update_column(:updated_at, Time.now )
 			return token 
