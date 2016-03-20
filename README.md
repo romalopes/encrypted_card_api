@@ -9,11 +9,10 @@ API to save encrypted credit card linked to users.<br>
 			$ cd encrypted_card_api
 			$ bundle install
 			$ rake db:migrate
-			$ rake db:migrate RAILS_ENV=test
 
 		 # To test
 		  	$ rake db:migrate RAILS_ENV=test
-		  	$ bundle exec rspec spec
+		  	$ bundle exec rspec spec  (63 tests)
 
 
 		 # To run the api web server
