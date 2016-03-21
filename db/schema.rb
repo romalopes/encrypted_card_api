@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160317231321) do
+ActiveRecord::Schema.define(version: 20160321101533) do
 
   create_table "credit_cards", force: :cascade do |t|
     t.integer  "user_id"
@@ -22,6 +22,16 @@ ActiveRecord::Schema.define(version: 20160317231321) do
   end
 
   add_index "credit_cards", ["user_id", "key"], name: "index_credit_cards_on_user_id_and_key", unique: true
+
+  create_table "logs", force: :cascade do |t|
+    t.integer  "user_id"
+    t.string   "message"
+    t.string   "description"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+  end
+
+  add_index "logs", ["id", "user_id"], name: "index_logs_on_id_and_user_id", unique: true
 
   create_table "tokens", force: :cascade do |t|
     t.integer  "user_id"
@@ -35,8 +45,9 @@ ActiveRecord::Schema.define(version: 20160317231321) do
   create_table "users", force: :cascade do |t|
     t.string   "login"
     t.string   "hashed_password"
-    t.datetime "created_at",      null: false
-    t.datetime "updated_at",      null: false
+    t.datetime "created_at",                       null: false
+    t.datetime "updated_at",                       null: false
+    t.integer  "authentication_tries", default: 0
   end
 
   add_index "users", ["login"], name: "index_users_on_login", unique: true

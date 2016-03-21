@@ -23,7 +23,7 @@ class Token < ApplicationRecord
 		if token.present?
 			# puts "\n\n    \nTime.now:#{Time.now}"
 			# token.save
-			token.update_column(:updated_at, Time.now )
+			token.update_column(:updated_at, Time.zone.now )
 			return token 
 		end
 	end

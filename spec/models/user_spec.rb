@@ -51,9 +51,22 @@ RSpec.describe User, :type => :model do
 
 	describe "when try to authenticate" do 
 		it "successful" do 
-			token = User.authenticate_and_generate_new_token("login_1", "romalopes")
+			token, number_tries = User.authenticate_and_generate_new_token("login_1", "romalopes")
 			expect(token).not_to eq(nil)
 			expect(token.token.size).to eq(50)
 		end
+
+		it "fail" do 
+			token, number_tries = User.authenticate_and_generate_new_token("login_1", "romalopes1")
+			expect(token).to eq(nil)
+		end
+
+		it "fail" do 
+			token, number_tries = User.authenticate_and_generate_new_token("login_1", "romalopes1")
+			expect(token).to eq(nil)
+			expect(number_tries).to eq(1)
+		end
+
 	end
+
 end

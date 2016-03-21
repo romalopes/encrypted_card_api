@@ -31,7 +31,6 @@ RSpec.describe Token, :type => :model do
 
 	describe "test if token " do 
 		it "when it is valid" do
-			puts "\n-----  @token.updated_at:#{@token.updated_at}\n\n\n"
 			previous_updated_at = @token.updated_at
 			sleep(0.1)
 			token = Token.get_token_and_touch(@token.token)

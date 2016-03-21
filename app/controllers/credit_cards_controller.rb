@@ -66,6 +66,7 @@ class CreditCardsController < ApplicationController
     end
     credit_card_number = credit_card.decrypted_credit_card(params[:password])
     if credit_card_number
+      token.user.add_log("Retrieving Credit card number from #{credit_card.key}")
       render json: {:credit_card_number => credit_card_number}.to_json, status: 200 and return
     else 
       render json: {:error => "Token not found or Credit Card could not be decrypted."}.to_json, status: :unprocessable_entity and return

@@ -40,3 +40,10 @@ API to save encrypted credit card linked to users.<br>
 
       http://localhost:3030/retrieve_credit_card_number?token=<TOKEN>&key=<KEY>&password=<PASSWORD> (post)
         Retrieve the credit card number.  Password is an information passed by client to encrypt credit card number.
+
+      http://localhost:3030/reset_authentication_tries?token=<TOKEN>&login=<KEY> (post)
+        Reset the authentication tries from user. Only user_master
+
+      http://localhost:3030/retrieve_logs?token=<TOKEN>&login=<KEY>&number_logs=<OPTIONAL> (post)
+        Retrieve logs informatin from user actions. Only user_master  
+        If the TOKEN is from master, then login should be passed.  Otherwise, the user's token will be used.

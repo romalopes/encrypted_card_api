@@ -1,7 +1,7 @@
 class ApplicationController < ActionController::API
 
 	def verify_token
-		puts "\n\n\nparams[:token]:#{params[:token]}----  params:#{params.values} "
+		# puts "\n\n\nparams[:token]:#{params[:token]}----  params:#{params.values} "
 		@token_verified = Token.get_token_and_touch(params[:token])
     if @token_verified.nil?
       render json: {:error => "Token not found"}.to_json, status: :unauthorized

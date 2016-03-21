@@ -26,7 +26,6 @@ RSpec.describe CreditCard, :type => :model do
 	describe "when verify credit_card" do
 		it "credit_card is correct" do 
 			credit_card_number = @credit_card.decrypted_credit_card("romalopes")
-			puts "\n\n\n\n\n --------------credit_card_number:#{credit_card_number}\n\n\n\n"
 			# @credit.hashed_password
 			expect(credit_card_number).to eq("credit_card_number_value")
 		end
@@ -34,7 +33,6 @@ RSpec.describe CreditCard, :type => :model do
 		it "password is incorrect" do 
 			credit_card_number = @credit_card.decrypted_credit_card("romalopes1")
 			expect(credit_card_number).to eq(nil)
-			puts "\n\n\n\n\n --------------credit_card_number:#{credit_card_number}\n\n\n\n"
 		end
 
 		it "decript is corect" do 

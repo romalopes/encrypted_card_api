@@ -1,7 +1,8 @@
 class User < ApplicationRecord
 
-	has_many :credit_cards
-	has_many :tokens
+	has_many :credit_cards, :dependent => :destroy
+	has_many :tokens, :dependent => :destroy
+	has_many :logs, :dependent => :destroy
 	validates_presence_of :login, :hashed_password
 	
 	def as_json(options={})
@@ -25,8 +26,22 @@ class User < ApplicationRecord
 	def self.authenticate_and_generate_new_token(login, password)
 		user = User.where(login: login, hashed_password: encrypted_value(password)).first
 		if user 
-			return Token.create_token(user)
+			user.update_attributes authentication_tries: 0
+			user.add_log("Authentication successful.")
+			return Token.create_token(user), 0
+		else
+			user = User.where(login: login).first
+			if user
+				user.update_attributes authentication_tries: user.authentication_tries + 1
+				user.add_log("Authentication failed.  Number tries: #{user.authentication_tries}.")
+			end
 		end
+
+		return nil, user.authentication_tries if user 
+	end
+
+	def add_log(message, description = nil)
+		self.logs.create(message: message, description: description)
 	end
 end
 

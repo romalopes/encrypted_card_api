@@ -39,7 +39,7 @@ RSpec.describe UsersController, :type => :controller do
   describe "GET index" do
     it "assigns all users as @users" do
       user = User.create(login: "user_master", hashed_password: User.encrypted_value("hashed_password"))
-      token = User.authenticate_and_generate_new_token("user_master", "hashed_password")
+      token, number_tries = User.authenticate_and_generate_new_token("user_master", "hashed_password")
       get :index, {token: token.token}, valid_session
       # expect(assigns(:users)).to eq([user])
       expect(response).to be_success
@@ -49,7 +49,7 @@ RSpec.describe UsersController, :type => :controller do
 
     it "assigns all users as not user_master" do
       user = User.create(login: "login", hashed_password: User.encrypted_value("hashed_password"))
-      token = User.authenticate_and_generate_new_token("login", "hashed_password")
+      token, number_tries = User.authenticate_and_generate_new_token("login", "hashed_password")
       get :index, {token: token.token}, valid_session
       # expect(assigns(:users)).to eq([user])
       expect(response.status).to eq(422)
@@ -62,7 +62,7 @@ RSpec.describe UsersController, :type => :controller do
     it "assigns the requested user as @user" do
       
       user = User.create(login: "user_master", hashed_password: User.encrypted_value("hashed_password"))
-      token = User.authenticate_and_generate_new_token("user_master", "hashed_password")
+      token, number_tries = User.authenticate_and_generate_new_token("user_master", "hashed_password")
       get :show, {token: token.token, :id => user.to_param}, valid_session
       # expect(assigns(:credit_card)).to eq(credit_card)
       expect(response).to be_success
@@ -73,7 +73,7 @@ RSpec.describe UsersController, :type => :controller do
 
     it "assigns the requested user not user_master" do
       user = User.create(login: "login", hashed_password: User.encrypted_value("hashed_password"))
-      token = User.authenticate_and_generate_new_token("login", "hashed_password")
+      token, number_tries = User.authenticate_and_generate_new_token("login", "hashed_password")
       get :show, {token: token.token, :id => user.to_param}, valid_session
       # expect(assigns(:users)).to eq([user])
       puts "\n\n\n\n----------response.body:#{response.body}"
@@ -146,7 +146,7 @@ RSpec.describe UsersController, :type => :controller do
         # user = User.last
 
         user = User.create(login:"user_master", hashed_password: User.encrypted_value("hashed_password"))
-        token = User.authenticate_and_generate_new_token("user_master", "hashed_password")
+        token, number_tries = User.authenticate_and_generate_new_token("user_master", "hashed_password")
         count = User.count
         post :create, {token: token.token, login: "login_2", password: "hashed_password"}, valid_session
 
@@ -161,7 +161,7 @@ RSpec.describe UsersController, :type => :controller do
 
       it "assigns a newly created user as @user" do
         user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
-        token = User.authenticate_and_generate_new_token("login", "hashed_password")
+        token, number_tries = User.authenticate_and_generate_new_token("login", "hashed_password")
         post :create, {token: token.token, login: "login_2", password:"hashed_password"}, valid_session
         user = User.last
         expect(user).to be_a(User)
@@ -178,7 +178,7 @@ RSpec.describe UsersController, :type => :controller do
     describe "with invalid params" do
       it "assigns a newly created but unsaved user as @user" do
         user = User.create(login:"user_master", hashed_password: User.encrypted_value("hashed_password"))
-        token = User.authenticate_and_generate_new_token("user_master", "hashed_password")
+        token, number_tries = User.authenticate_and_generate_new_token("user_master", "hashed_password")
         user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
 
         post :create, {token: token.token, user: {login: nil, password: nil}}, valid_session
@@ -209,7 +209,7 @@ RSpec.describe UsersController, :type => :controller do
 
         master_user = User.create(login:"user_master", hashed_password: User.encrypted_value("hashed_password"))
         user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
-        token = User.authenticate_and_generate_new_token("user_master", "hashed_password")
+        token, number_tries = User.authenticate_and_generate_new_token("user_master", "hashed_password")
         put :update, {token: token.token, :id => user.to_param, :user => {login: "login_1"}}, valid_session
         user.reload
         expect(response.status).to eq(200)
@@ -233,7 +233,7 @@ RSpec.describe UsersController, :type => :controller do
     describe "with invalid params" do
       it "assigns the user as @user" do
         user = User.create(login:"user_master", hashed_password: User.encrypted_value("hashed_password"))
-        token = User.authenticate_and_generate_new_token("user_master", "hashed_password")
+        token, number_tries = User.authenticate_and_generate_new_token("user_master", "hashed_password")
         user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
 
         put :update, {token: token.token, :id => user.to_param, :user => {login: nil}}, valid_session
@@ -258,7 +258,7 @@ RSpec.describe UsersController, :type => :controller do
       #   delete :destroy, {:id => user.to_param}, valid_session
       # }.to change(User, :count).by(-1)
       user = User.create(login:"user_master", hashed_password: User.encrypted_value("hashed_password"))
-      token = User.authenticate_and_generate_new_token("user_master", "hashed_password")
+      token, number_tries = User.authenticate_and_generate_new_token("user_master", "hashed_password")
       user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
       expect {
         delete :destroy, {token: token.token, :id => user.to_param}, valid_session
@@ -273,5 +273,186 @@ RSpec.describe UsersController, :type => :controller do
     #   expect(response).to redirect_to(users_url)
     # end
   end
+
+  describe "Authenticate" do
+    it "is successful" do
+      user = User.create(login:"user_master", hashed_password: User.encrypted_value("hashed_password"))
+      user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
+      
+      post :authenticate, {login: "login", password: "hashed_password"}, valid_session
+      
+      expect(response.status).to eq(200)
+      expect(response.body["token"]).not_to be_nil
+    end
+    
+    it "fails" do
+      user = User.create(login:"user_master", hashed_password: User.encrypted_value("hashed_password"))
+      user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
+      
+      post :authenticate, {login: "login", password: "hashed_password_1"}, valid_session
+      
+      expect(response.status).to eq(401)
+      expect(response.body["token"]).to be_nil
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response).to eq({"error"=>"Login or password don't match"})
+
+      expect(User.last.authentication_tries).to eq(1)
+    end
+
+     it "with some fails and success" do
+      user = User.create(login:"user_master", hashed_password: User.encrypted_value("hashed_password"))
+      user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
+      
+      post :authenticate, {login: "login", password: "hashed_password_1"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_2"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_3"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_4"}, valid_session
+      expect(User.last.authentication_tries).to eql(4)
+      post :authenticate, {login: "login", password: "hashed_password"}, valid_session
+      expect(response.status).to eq(200)
+      parsed_response = JSON.parse(response.body)
+      expect(response.body["token"]).not_to be_nil
+      expect(User.last.authentication_tries).to eql(0)
+    end
+
+    it "number tries more than 10 " do
+      user = User.create(login:"user_master", hashed_password: User.encrypted_value("hashed_password"))
+      user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
+      
+      post :authenticate, {login: "login", password: "hashed_password_1"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_2"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_3"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_4"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_5"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_6"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_7"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_8"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_9"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_10"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_11"}, valid_session
+
+      expect(response.status).to eq(401)
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response).to eq({"error"=>"You tried to login more than 10 times.  Asks user_master to reset your account."})
+      expect(User.last.authentication_tries).to eql(11)
+    end
+  end
+
+  describe "Reseting authenticate tries " do
+    it "successful" do
+      user = User.create(login:"user_master", hashed_password: User.encrypted_value("hashed_password"))
+      token, number_tries = User.authenticate_and_generate_new_token("user_master", "hashed_password")
+      user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
+      
+      post :authenticate, {login: "login", password: "hashed_password_1"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_2"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_3"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_4"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_5"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_6"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_7"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_8"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_9"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_10"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_11"}, valid_session
+
+
+      post :reset_authentication_tries, {token: token.token, login: "login"}, valid_session
+
+      expect(response.status).to eq(200)
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response).to eq({"success"=>"User #{User.last.login} authentication tries was reset."})
+      expect(User.last.authentication_tries).to eql(0)
+    end
+
+    it "fail" do
+      user = User.create(login:"user_master", hashed_password: User.encrypted_value("hashed_password"))
+      token, number_tries = User.authenticate_and_generate_new_token("user_master", "hashed_password")
+      user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
+      
+      post :authenticate, {login: "login", password: "hashed_password_1"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_2"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_3"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_4"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_5"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_6"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_7"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_8"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_9"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_10"}, valid_session
+      post :authenticate, {login: "login", password: "hashed_password_11"}, valid_session
+
+
+      post :reset_authentication_tries, {token: token.token, login: "login_1"}, valid_session
+
+      expect(response.status).to eq(422)
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response).to eq({"error"=>"User login_1 wasn't found."})
+      expect(User.last.authentication_tries).to eql(11)
+    end
+  end
+
+
+    describe "logs" do
+      it "all logs" do
+        user = User.create(login:"user_master", hashed_password: User.encrypted_value("hashed_password"))
+        token, number_tries = User.authenticate_and_generate_new_token("user_master", "hashed_password")
+        user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
+
+        i = 0
+        user.add_log("message #{i}", "description")
+        i += 1
+        user.add_log("message #{i}", "description")
+        i += 1
+        user.add_log("message #{i}", "description")
+        i += 1
+        user.add_log("message #{i}", "description")
+        i += 1
+        user.add_log("message #{i}", "description")
+        i += 1
+        user.add_log("message #{i}", "description")
+        post :logs, {token: token.token, login: "login"}, valid_session
+        puts "\n\n\n\n response.body:#{response.body}\n\n\n\n"
+        expect(response.status).to eq(200)
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to eq([{"message"=>"message 0", "description"=>"description", "created_at" => Time.zone.now.strftime('%d-%m-%Y %H:%M:%S')},
+                                        {"message"=>"message 1", "description"=>"description", "created_at" => Time.zone.now.strftime('%d-%m-%Y %H:%M:%S')},
+                                        {"message"=>"message 2", "description"=>"description", "created_at" => Time.zone.now.strftime('%d-%m-%Y %H:%M:%S')},
+                                        {"message"=>"message 3", "description"=>"description", "created_at" => Time.zone.now.strftime('%d-%m-%Y %H:%M:%S')},
+                                        {"message"=>"message 4", "description"=>"description", "created_at" => Time.zone.now.strftime('%d-%m-%Y %H:%M:%S')},
+                                        {"message"=>"message 5", "description"=>"description", "created_at" => Time.zone.now.strftime('%d-%m-%Y %H:%M:%S')}])
+      end
+
+      it "3 logs" do
+        user = User.create(login:"user_master", hashed_password: User.encrypted_value("hashed_password"))
+        token, number_tries = User.authenticate_and_generate_new_token("user_master", "hashed_password")
+        user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
+
+        i = 0
+        user.add_log("message #{i}", "description")
+        i += 1
+        user.add_log("message #{i}", "description")
+        i += 1
+        user.add_log("message #{i}", "description")
+        i += 1
+        user.add_log("message #{i}", "description")
+        i += 1
+        user.add_log("message #{i}", "description")
+        i += 1
+        user.add_log("message #{i}", "description")
+        post :logs, {token: token.token, login: "login", number_logs: 3}, valid_session
+        puts "\n\n\n\n response.body:#{response.body}\n\n\n\n"
+        expect(response.status).to eq(200)
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to eq([{"message"=>"message 3", "description"=>"description", "created_at" => Time.zone.now.strftime('%d-%m-%Y %H:%M:%S')},
+                                        {"message"=>"message 4", "description"=>"description", "created_at" => Time.zone.now.strftime('%d-%m-%Y %H:%M:%S')},
+                                        {"message"=>"message 5", "description"=>"description", "created_at" => Time.zone.now.strftime('%d-%m-%Y %H:%M:%S')}])
+      end
+
+      # it "re-renders the 'new' template" do
+      #   post :create, {:user => invalid_attributes}, valid_session
+      #   expect(response).to render_template("new")
+      # end
+    end
 
 end

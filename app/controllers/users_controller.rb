@@ -80,12 +80,45 @@ class UsersController < ApplicationController
     @user.destroy
   end
 
+  def reset_authentication_tries
+    return unless @token_verified && verify_is_master
+
+    user = User.where(login: params[:login]).first 
+    if user 
+      user.update_attributes authentication_tries: 0
+      user.add_log("User Master Reset authentication tries")
+      render json: {:success => "User #{params[:login]} authentication tries was reset."}.to_json
+    else
+      render json: {:error => "User #{params[:login]} wasn't found."}.to_json, status: :unprocessable_entity
+    end
+  end
+
+  def logs
+    return unless @token_verified
+
+    if verify_is_master
+      user = User.where(login: params[:login]).first 
+    else
+      user = @token_verified.user
+    end
+
+    if user 
+      logs = params[:number_logs].present? ? user.logs.last(params[:number_logs])  : user.logs
+      render json: logs.to_json
+    else
+      render json: {:error => "User #{params[:login]} wasn't found."}.to_json, status: :unprocessable_entity
+    end
+  end
+
   def authenticate
-    token = User.authenticate_and_generate_new_token(params[:login], params[:password])
-    if token 
+    token, number_tries = User.authenticate_and_generate_new_token(params[:login], params[:password])
+
+    if number_tries > 10
+      render json: {:error => "You tried to login more than 10 times.  Asks user_master to reset your account."}.to_json, status: 401
+    elsif token 
       render json: token
     else
-      render json: {:error => "Login or password don't match"}.to_json
+      render json: {:error => "Login or password don't match"}.to_json, status: 401
     end
   end
 

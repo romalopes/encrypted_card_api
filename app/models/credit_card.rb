@@ -14,12 +14,12 @@ class CreditCard < ApplicationRecord
 	end
 
 	def self.create_by_params(token, password, key, credit_card_number)
-
 		puts "token:#{token.user.login}, password:#{password}, key:#{key}, credit_card_number:#{credit_card_number}"
 		if !credit_card_number.blank? && !password.blank? && !key.blank?
 			credit_card_number_encrypted = encrypted_value(credit_card_number, password)
 		end
 		return CreditCard.create(user: token.user, key: key, credit_card_number: credit_card_number_encrypted)
+
     
 	end
 
