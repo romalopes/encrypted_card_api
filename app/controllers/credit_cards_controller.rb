@@ -30,12 +30,17 @@ class CreditCardsController < ApplicationController
       render json: {:error => "Password can't not be emtpy"}.to_json, status: :unauthorized and return
     end
 
-    @credit_card = CreditCard.create_by_params(@token_verified, params[:password], params[:key], params[:credit_card_number])
-
-    if @credit_card.save
-      render json: @credit_card, status: :created, location: @credit_card
+    credit_card = @token_verified.user.credit_cards.where(key: params[:key]).first 
+    if credit_card
+        render json: {error: "Credit Card #{params[:key]} already exists."}, status: :unprocessable_entity and return  
     else
-      render json: @credit_card.errors, status: :unprocessable_entity
+      @credit_card = CreditCard.create_by_params(@token_verified, params[:password], params[:key], params[:credit_card_number])
+
+      if @credit_card.save
+        render json: @credit_card, status: :created, location: @credit_card
+      else
+        render json: @credit_card.errors, status: :unprocessable_entity
+      end
     end
   end
 

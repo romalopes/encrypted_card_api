@@ -40,6 +40,8 @@ class UsersController < ApplicationController
     puts "\n\n\n params:#{params}  ---  #{params.to_h}\n\n"
     # puts "test_object.methods:#{params.methods}"
 
+
+
     puts "\n\n-----values:#{params.values} keys:#{params.keys}   params.as_json:#{params.as_json}--   params.as_json[user]:#{params.as_json["user"]}  to_param:#{params.to_param}\n\n\n\n"
     # test_object.methods:[:keys, :key?, :has_key?, :values, :has_value?, :value?, :empty?, :include?, :as_json, 
     #:always_permitted_parameters, :always_permitted_parameters=, :==, :to_h, :to_unsafe_h, :to_unsafe_hash, 
@@ -53,12 +55,18 @@ class UsersController < ApplicationController
     #instance_variable_set, :instance_variable_defined?, :remove_instance_variable, :instance_of?, :kind_of?, :is_a?, :tap, :send, :public_send, :respond_to?, :extend,
     # :display, :method, :public_method, :singleton_method, :define_singleton_method, :object_id, :to_enum, :enum_for, :gem, :class_eval, :byebug, :debugger, :pretty_inspect, 
     #:suppress_warnings, :equal?, :!, :!=, :instance_eval, :instance_exec, :__send__, :__id__]
-    @user = User.create_by_params(params[:login], params[:password])#params.as_json["user"])
 
-    if @user.errors.empty?
-      render json: @user, status: :created, location: @user
+    user = User.where(login: params[:login]).first 
+    if user
+        render json: {error: "User #{params[:login]} already exists."}, status: :unprocessable_entity and return  
     else
-      render json: @user.errors, status: :unprocessable_entity
+      @user = User.create_by_params(params[:login], params[:password])#params.as_json["user"])
+
+      if @user.errors.empty?
+        render json: @user, status: :created, location: @user
+      else
+        render json: @user.errors, status: :unprocessable_entity
+      end
     end
   end
 
