@@ -18,7 +18,6 @@ API to save encrypted credit card linked to users.<br>
 		 # To run the api web server
 		  	$ rails s -p 3030 (this port only to be able to be accessed by encrypted_card_client)
 
-
   	First action to do
 		http://localhost:3030/create_user_master?password=PASSWORD (post)
       Create a users called user_master.

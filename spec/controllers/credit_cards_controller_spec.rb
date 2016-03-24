@@ -153,26 +153,35 @@ RSpec.describe CreditCardsController, :type => :controller do
     end
   end
 
-  describe "PUT update" do
+
+
+
+
+
+
+  describe "Post create or update" do
     describe "with valid params" do
       let(:new_attributes) {
         skip("Add a hash of attributes valid for your model")
       }
 
-      it "updates the requested credit_card" do
+      it "create or update credit_card" do
         user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
         token, number_tries = User.authenticate_and_generate_new_token("login", "hashed_password")
-        credit_card = user.credit_cards.create(key: "key", credit_card_number: CreditCard.encrypted_value("credit_card_number", "romalopes")) #, valid_attributes
+        # credit_card = user.credit_cards.create(key: "key", credit_card_number: CreditCard.encrypted_value("credit_card_number", "romalopes")) #, valid_attributes
 
         # credit_card = CreditCard.create! valid_attributes
         # put :update, {:id => credit_card.to_param, :credit_card => new_attributes}, valid_session
-        put :update, {:id => credit_card.to_param, token: token.token, :credit_card => {key: "key_1"}}, valid_session
-        credit_card.reload
-        expect(response.status).to eq(200)
+        count = CreditCard.count
+        post :create_or_update_card, {token: token.token, key: "key_1", password: "romalopes", credit_card_number: "credit_card_number"}, valid_session
+
+        expect(response.status).to eq(201)
         parsed_response = JSON.parse(response.body)
         expect(parsed_response).to eq({"user"=>"login", "key"=>"key_1"})
+        credit_card = CreditCard.last
         expect(credit_card.key).to eq("key_1")
-
+        expect(CreditCard.count).to eq(count + 1)
+        
         # skip("Add assertions for updated state")
       end
 
@@ -183,27 +192,71 @@ RSpec.describe CreditCardsController, :type => :controller do
       #   expect(response).to redirect_to(credit_card)
       # end
     end
-
-    describe "with invalid params" do
-      it "assigns the credit_card as @credit_card" do
-        user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
-        token, number_tries = User.authenticate_and_generate_new_token("login", "hashed_password")
-        credit_card = user.credit_cards.create(key: "key", credit_card_number: CreditCard.encrypted_value("credit_card_number", "romalopes")) #, valid_attributes
-
-        put :update, {:id => credit_card.to_param, token: token.token, :credit_card => {credit_card_number: nil} }, valid_session
-        expect(response.status).to eq(422)
-        parsed_response = JSON.parse(response.body)
-        expect(parsed_response).to eq({"credit_card_number"=>["can't be blank"]})
-        # expect(assigns(:credit_card)).to eq(credit_card)
-      end
-
-      # it "re-renders the 'edit' template" do
-      #   credit_card = CreditCard.create! valid_attributes
-      #   put :update, {:id => credit_card.to_param, :credit_card => invalid_attributes}, valid_session
-      #   expect(response).to render_template("edit")
-      # end
-    end
   end
+
+
+
+
+
+
+
+
+
+
+
+
+
+  # describe "PUT update" do
+  #   describe "with valid params" do
+  #     let(:new_attributes) {
+  #       skip("Add a hash of attributes valid for your model")
+  #     }
+
+  #     it "updates the requested credit_card" do
+  #       user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
+  #       token, number_tries = User.authenticate_and_generate_new_token("login", "hashed_password")
+  #       credit_card = user.credit_cards.create(key: "key", credit_card_number: CreditCard.encrypted_value("credit_card_number", "romalopes")) #, valid_attributes
+
+  #       # credit_card = CreditCard.create! valid_attributes
+  #       # put :update, {:id => credit_card.to_param, :credit_card => new_attributes}, valid_session
+  #       put :update, {:id => credit_card.to_param, token: token.token, :credit_card => {key: "key_1"}}, valid_session
+  #       credit_card.reload
+  #       expect(response.status).to eq(200)
+  #       parsed_response = JSON.parse(response.body)
+  #       expect(parsed_response).to eq({"user"=>"login", "key"=>"key_1"})
+  #       expect(credit_card.key).to eq("key_1")
+
+  #       # skip("Add assertions for updated state")
+  #     end
+
+  #     # it "redirects to the credit_card" do
+  #     #   user = User.create(login:"login", hashed_password: "hashed_password")
+  #     #   credit_card = user.credit_cards.create(key: "key", credit_card_number: CreditCard.encrypted_value("credit_card_number", "romalopes")) #, valid_attributes
+  #     #   put :update, {:id => credit_card.to_param, :credit_card => {key: "key_1"}}, valid_session
+  #     #   expect(response).to redirect_to(credit_card)
+  #     # end
+  #   end
+
+  #   describe "with invalid params" do
+  #     it "assigns the credit_card as @credit_card" do
+  #       user = User.create(login:"login", hashed_password: User.encrypted_value("hashed_password"))
+  #       token, number_tries = User.authenticate_and_generate_new_token("login", "hashed_password")
+  #       credit_card = user.credit_cards.create(key: "key", credit_card_number: CreditCard.encrypted_value("credit_card_number", "romalopes")) #, valid_attributes
+
+  #       put :update, {:id => credit_card.to_param, token: token.token, :credit_card => {credit_card_number: nil} }, valid_session
+  #       expect(response.status).to eq(200)
+  #       parsed_response = JSON.parse(response.body)
+  #       expect(parsed_response).to eq({"key"=>["can't be blank"], "credit_card_number"=>["can't be blank"]})
+  #       # expect(assigns(:credit_card)).to eq(credit_card)
+  #     end
+
+  #     # it "re-renders the 'edit' template" do
+  #     #   credit_card = CreditCard.create! valid_attributes
+  #     #   put :update, {:id => credit_card.to_param, :credit_card => invalid_attributes}, valid_session
+  #     #   expect(response).to render_template("edit")
+  #     # end
+  #   end
+  # end
 
   describe "DELETE destroy" do
     it "destroys the requested credit_card" do

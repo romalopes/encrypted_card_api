@@ -7,4 +7,6 @@ Rails.application.routes.draw do
   match 'reset_authentication_tries' => 'users#reset_authentication_tries', via: [:post] 
   match 'logs' => 'users#logs', via: [:post] 
   match 'retrieve_credit_card_number' => 'credit_cards#retrieve_credit_card_number', via: [:post] 
+  match 'create_or_update_card' => 'credit_cards#create_or_update_card', via: [:post] 
+  
 end

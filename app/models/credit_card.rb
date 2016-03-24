@@ -14,13 +14,22 @@ class CreditCard < ApplicationRecord
 	end
 
 	def self.create_by_params(token, password, key, credit_card_number)
-		puts "token:#{token.user.login}, password:#{password}, key:#{key}, credit_card_number:#{credit_card_number}"
 		if !credit_card_number.blank? && !password.blank? && !key.blank?
 			credit_card_number_encrypted = encrypted_value(credit_card_number, password)
 		end
 		return CreditCard.create(user: token.user, key: key, credit_card_number: credit_card_number_encrypted)
+	end
 
-    
+	def update_by_params(password, key, credit_card_number)
+		params = {}
+		if !credit_card_number.blank? 
+			if !password.blank? && !key.blank?
+				credit_card_number_encrypted = encrypted_value(credit_card_number, password)
+			end
+			params[:credit_card_number] = credit_card_number_encrypted
+		end
+		params[:key] = key unless key.blank?
+		return self.update_attributes params
 	end
 
 	def decrypted_credit_card(password)
@@ -29,8 +38,6 @@ class CreditCard < ApplicationRecord
 			return cipher.decrypt("#{self.credit_card_number}")
 		rescue Gibberish::AES::SJCL::DecryptionError => e 
 		end
-# => "some secret text"
-
 	end
 
 	def self.encrypted_value(value, password)

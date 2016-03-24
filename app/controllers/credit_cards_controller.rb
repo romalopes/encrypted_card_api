@@ -44,16 +44,43 @@ class CreditCardsController < ApplicationController
     end
   end
 
-  # PATCH/PUT /credit_cards/1
-  def update
+  def create_or_update_card
     return unless @token_verified
+    
+    puts "params:#{params}"
+    if params[:password].blank?
+      render json: {:error => "Password can't not be emtpy"}.to_json, status: :unauthorized and return
+    end
 
-    if @credit_card.update(credit_card_params)
-      render json: @credit_card
+    @credit_card = @token_verified.user.credit_cards.where(key: params[:key]).first 
+    if @credit_card
+        if @credit_card.update_by_params(params[:password], params[:key], params[:credit_card_number])
+          render json: @credit_card, status: :created, location: @credit_card
+        else
+          render json: @credit_card.errors, status: :unprocessable_entity
+        end
     else
-      render json: @credit_card.errors, status: :unprocessable_entity
+      @credit_card = CreditCard.create_by_params(@token_verified, params[:password], params[:key], params[:credit_card_number])
+
+      if @credit_card.save
+        render json: @credit_card, status: :created, location: @credit_card
+      else
+        render json: @credit_card.errors, status: :unprocessable_entity
+      end
     end
   end
+
+  # PATCH/PUT /credit_cards/1
+  # def update
+  #   puts "\n\n\n\n------ #{credit_card_params[:password]}, #{credit_card_params[:key]}, ---#{credit_card_params[:credit_card_number]}\n\n\n\n"
+  #   return unless @token_verified
+
+  #   if @credit_card.update_by_params(credit_card_params[:password], credit_card_params[:key], credit_card_params[:credit_card_number])
+  #     render json: @credit_card
+  #   else
+  #     render json: @credit_card.errors, status: :unprocessable_entity
+  #   end
+  # end
 
   # DELETE /credit_cards/1
   def destroy
@@ -71,7 +98,7 @@ class CreditCardsController < ApplicationController
     end
     credit_card_number = credit_card.decrypted_credit_card(params[:password])
     if credit_card_number
-      token.user.add_log("Retrieving Credit card number from #{credit_card.key}")
+      @token_verified.user.add_log("Retrieving Credit card number from #{credit_card.key}")
       render json: {:credit_card_number => credit_card_number}.to_json, status: 200 and return
     else 
       render json: {:error => "Token not found or Credit Card could not be decrypted."}.to_json, status: :unprocessable_entity and return

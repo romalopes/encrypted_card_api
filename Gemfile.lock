@@ -11,7 +11,7 @@ GIT
     rails_log_stdout (0.0.1)
 
 GEM
-  remote: https://rubygems.org/
+  remote: http://rubygems.org/
   specs:
     actioncable (5.0.0.beta3)
       actionpack (= 5.0.0.beta3)
