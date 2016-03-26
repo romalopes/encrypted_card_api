@@ -46,7 +46,6 @@ class CreditCardsController < ApplicationController
 
   def create_or_update_card
     return unless @token_verified
-    
     puts "params:#{params}"
     if params[:password].blank?
       render json: {:error => "Password can't not be emtpy"}.to_json, status: :unauthorized and return
@@ -55,7 +54,7 @@ class CreditCardsController < ApplicationController
     @credit_card = @token_verified.user.credit_cards.where(key: params[:key]).first 
     if @credit_card
         if @credit_card.update_by_params(params[:password], params[:key], params[:credit_card_number])
-          render json: @credit_card, status: :created, location: @credit_card
+          render json: {credit_card_number: @credit_card.key, token_time: @token_verified.updated_at}.to_json, status: :created #, location: @credit_card
         else
           render json: @credit_card.errors, status: :unprocessable_entity
         end
@@ -99,7 +98,7 @@ class CreditCardsController < ApplicationController
     credit_card_number = credit_card.decrypted_credit_card(params[:password])
     if credit_card_number
       @token_verified.user.add_log("Retrieving Credit card number from #{credit_card.key}")
-      render json: {:credit_card_number => credit_card_number}.to_json, status: 200 and return
+      render json: {:credit_card_number => credit_card_number, token_time: @token_verified.updated_at}.to_json, status: 200 and return
     else 
       render json: {:error => "Token not found or Credit Card could not be decrypted."}.to_json, status: :unprocessable_entity and return
     end

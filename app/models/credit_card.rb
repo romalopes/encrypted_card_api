@@ -24,7 +24,7 @@ class CreditCard < ApplicationRecord
 		params = {}
 		if !credit_card_number.blank? 
 			if !password.blank? && !key.blank?
-				credit_card_number_encrypted = encrypted_value(credit_card_number, password)
+				credit_card_number_encrypted = CreditCard.encrypted_value(credit_card_number, password)
 			end
 			params[:credit_card_number] = credit_card_number_encrypted
 		end

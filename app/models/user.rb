@@ -27,13 +27,13 @@ class User < ApplicationRecord
 		user = User.where(login: login, hashed_password: encrypted_value(password)).first
 		if user 
 			user.update_attributes authentication_tries: 0
-			user.add_log("Authentication successful.")
+			user.add_log("Authentication successful of #{login}.")
 			return Token.create_token(user), 0
 		else
 			user = User.where(login: login).first
 			if user
 				user.update_attributes authentication_tries: user.authentication_tries + 1
-				user.add_log("Authentication failed.  Number tries: #{user.authentication_tries}.")
+				user.add_log("Authentication failed of #{login}.  Number tries: #{user.authentication_tries}.")
 			end
 		end
 
