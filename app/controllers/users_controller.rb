@@ -37,11 +37,6 @@ class UsersController < ApplicationController
     return unless @token_verified && verify_is_master
 
 
-    puts "\n\n\n params:#{params}  ---  #{params.to_h}\n\n"
-    # puts "test_object.methods:#{params.methods}"
-
-
-
     puts "\n\n-----values:#{params.values} keys:#{params.keys}   params.as_json:#{params.as_json}--   params.as_json[user]:#{params.as_json["user"]}  to_param:#{params.to_param}\n\n\n\n"
     # test_object.methods:[:keys, :key?, :has_key?, :values, :has_value?, :value?, :empty?, :include?, :as_json, 
     #:always_permitted_parameters, :always_permitted_parameters=, :==, :to_h, :to_unsafe_h, :to_unsafe_hash, 

@@ -1,6 +1,6 @@
 class CreditCard < ApplicationRecord
 
-	belongs_to :user, dependent: :destroy
+	belongs_to :user
 
 	validates_presence_of :user_id, :key, :credit_card_number
 	validates_uniqueness_of :key, :scope => :user_id

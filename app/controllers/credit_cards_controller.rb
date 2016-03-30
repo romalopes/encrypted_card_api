@@ -24,8 +24,6 @@ class CreditCardsController < ApplicationController
   # POST /credit_cards
   def create
     return unless @token_verified
-    
-    puts "params:#{params}"
     if params[:password].blank?
       render json: {:error => "Password can't not be emtpy"}.to_json, status: :unauthorized and return
     end
@@ -46,7 +44,6 @@ class CreditCardsController < ApplicationController
 
   def create_or_update_card
     return unless @token_verified
-    puts "params:#{params}"
     if params[:password].blank?
       render json: {:error => "Password can't not be emtpy"}.to_json, status: :unauthorized and return
     end
@@ -54,7 +51,7 @@ class CreditCardsController < ApplicationController
     @credit_card = @token_verified.user.credit_cards.where(key: params[:key]).first 
     if @credit_card
         if @credit_card.update_by_params(params[:password], params[:key], params[:credit_card_number])
-          render json: {credit_card_number: @credit_card.key, token_time: @token_verified.updated_at}.to_json, status: :created #, location: @credit_card
+          render json: {credit_card_number: params[:credit_card_number], token_time: @token_verified.updated_at}.to_json, status: :created #, location: @credit_card
         else
           render json: @credit_card.errors, status: :unprocessable_entity
         end
@@ -85,6 +82,19 @@ class CreditCardsController < ApplicationController
   def destroy
     return unless @token_verified
     @credit_card.destroy
+  end
+
+
+  def delete_credit_card 
+    return unless @token_verified
+
+    @credit_card = @token_verified.user.credit_cards.where(key: params[:key]).first 
+    if @credit_card
+      @credit_card.destroy 
+      render json: {success: "Credit card removed", token_time: @token_verified.updated_at}.to_json, status: :created #, location: @credit_card
+    else
+      render json: {:error => "Credit card nor found.", token_time: @token_verified.updated_at}.to_json, status: :unprocessable_entity and return
+    end
   end
 
   def retrieve_credit_card_number

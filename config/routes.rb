@@ -8,5 +8,5 @@ Rails.application.routes.draw do
   match 'logs' => 'users#logs', via: [:post] 
   match 'retrieve_credit_card_number' => 'credit_cards#retrieve_credit_card_number', via: [:post] 
   match 'create_or_update_card' => 'credit_cards#create_or_update_card', via: [:post] 
-  
+  match 'delete_credit_card' => 'credit_cards#delete_credit_card', via: [:post] 
 end
