@@ -116,7 +116,7 @@ class UsersController < ApplicationController
   def authenticate
     token, number_tries = User.authenticate_and_generate_new_token(params[:login], params[:password])
 
-    if number_tries > 10
+    if number_tries && number_tries > 10
       render json: {:error => "You tried to login more than 10 times.  Asks user_master to reset your account."}.to_json, status: 401
     elsif token 
       render json: token
