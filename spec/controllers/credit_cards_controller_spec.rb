@@ -294,7 +294,7 @@ RSpec.describe CreditCardsController, :type => :controller do
 
         expect(response.status).to eq(422)
         parsed_response = JSON.parse(response.body)
-        expect(parsed_response).to eq({"error" => "Credit card nor found."})
+        expect(parsed_response).to eq({"error" => "Credit card not found."})
       end
 
       it "return correct CreditCard_number and wrong password" do

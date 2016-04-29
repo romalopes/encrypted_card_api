@@ -93,7 +93,7 @@ class CreditCardsController < ApplicationController
       @credit_card.destroy 
       render json: {success: "Credit card removed", token_time: @token_verified.updated_at}.to_json, status: :created #, location: @credit_card
     else
-      render json: {:error => "Credit card nor found.", token_time: @token_verified.updated_at}.to_json, status: :unprocessable_entity and return
+      render json: {:error => "Credit card not found.", token_time: @token_verified.updated_at}.to_json, status: :unprocessable_entity and return
     end
   end
 
@@ -103,7 +103,7 @@ class CreditCardsController < ApplicationController
 
     credit_card = @token_verified.user.credit_cards.where(key: params[:key]).first
     if credit_card.nil?
-      render json: {:error => "Credit card nor found."}.to_json, status: :unprocessable_entity and return
+      render json: {:error => "Credit card not found."}.to_json, status: :unprocessable_entity and return
     end
     credit_card_number = credit_card.decrypted_credit_card(params[:password])
     if credit_card_number
